@@ -1,299 +1,184 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { phrases } from "./data/phrases";
 
+function normalize(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[.,!?]/g, "")
+    .replace(/\s+/g, "");
+}
+
 export default function TranslationCheckerText() {
-  //////////////////////////
-  //DATOS
-
-  // placeholder inicial
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  // elige una frase al azar para empezar
-  useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * phrases.length);
-    setCurrentIndex(randomIndex);
-  }, []);
-
-  // sacamos la frase actual usando el índice
-  const phrase = phrases[currentIndex];
-
-  //////////////////////////
-  //INTERACCIÓN:
-
-  // guarda lo que el usuario escribe en el campo de texto
   const [userInput, setUserInput] = useState("");
-
-  // guarda estado de respuesta (null)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-
-  // controla si se muestra o no la respuesta correcta abajo
   const [showAnswer, setShowAnswer] = useState(false);
-
-  // mensaje temporal cuando intenta marcar correct sin que coincida
   const [showWarning, setShowWarning] = useState(false);
-
-  // normalizacion
-  const normalize = (text: string) => {
-    return text
-      .toLowerCase()
-      .trim()
-      .replace(/[.,!?]/g, "")
-      .replace(/\s+/g, "");
-  };
-
-  // revisa si es correcta o no la respuesta
-  const handleCheck = () => {
-    const user = normalize(userInput);
-    const expected = normalize(phrase.romaji);
-
-    const result = user === expected;
-    setIsCorrect(result);
-  };
-
-  //////////////////////////
-  // SELF-RATING
-
-  // guarda si el usuario marcó la frase como "correct" o "incorrect" antes de pasar a la siguiente
   const [selfRating, setSelfRating] = useState<"correct" | "incorrect" | null>(
-    null,
+    null
   );
-
-  //////////////////////////
-  // PUNTAJE Y SIGUIENTE FRASE: se suma al contador y se resetea todo
-
-  // guarda el puntaje acumulado
   const [score, setScore] = useState({ correct: 0, incorrect: 0 });
 
-  // cuando el usuario pulsa "Next", primero suma el rating al contador y LUEGO resetea todo
-  const handleNext = () => {
-    // 1. suma al contador segun lo que marca el user
+  useEffect(() => {
+    setCurrentIndex(Math.floor(Math.random() * phrases.length));
+  }, []);
+
+  const phrase = phrases[currentIndex];
+
+  const handleCheck = useCallback(() => {
+    const result = normalize(userInput) === normalize(phrase.romaji);
+    setIsCorrect(result);
+    return result;
+  }, [userInput, phrase.romaji]);
+
+  const handleCorrect = useCallback(() => {
+    const result = handleCheck();
+    if (result) {
+      setSelfRating("correct");
+    } else {
+      setShowWarning(true);
+      setTimeout(() => setShowWarning(false), 2000);
+    }
+  }, [handleCheck]);
+
+  const handleNext = useCallback(() => {
     if (selfRating === "correct") {
       setScore((prev) => ({ ...prev, correct: prev.correct + 1 }));
     } else if (selfRating === "incorrect") {
       setScore((prev) => ({ ...prev, incorrect: prev.incorrect + 1 }));
     }
-
-    // 2. cambia a una frase nueva al azar
-    const nextIndex = Math.floor(Math.random() * phrases.length);
-    setCurrentIndex(nextIndex);
-
-    // 3. limpia el campo de texto
+    setCurrentIndex(Math.floor(Math.random() * phrases.length));
     setUserInput("");
-
-    // 4. borra el resultado de Check (correct/incorrect)
     setIsCorrect(null);
-
-    // 5. esconde la respuesta
     setShowAnswer(false);
-
-    // 6. deja los botones Correct/Incorrect sin seleccionar (no actualiza el contador)
     setSelfRating(null);
-  };
+  }, [selfRating]);
 
   return (
-    <section style={{ marginTop: "1rem" }}>
-      {/* CONTADOR DE PUNTAJE: se muestra arriba todo el tiempo */}
-      <div
-        style={{
-          display: "flex",
-          gap: "1rem",
-          marginTop: "0.5rem",
-          fontSize: "0.9rem",
-        }}
-      >
-        <span style={{ color: "green", fontWeight: "bold" }}>
-          ✓ {score.correct}
+    <section className="mx-auto max-w-2xl space-y-5">
+      {/* Score */}
+      <div className="flex items-center gap-4 text-sm font-bold">
+        <span className="text-fuchsia-400 drop-shadow-[0_0_6px_rgba(217,70,239,0.6)]">
+          Correct: {score.correct}
         </span>
-        <span style={{ color: "red", fontWeight: "bold" }}>
-          ✗ {score.incorrect}
+        <span className="text-zinc-500">Incorrect: {score.incorrect}</span>
+      </div>
+
+      {/* Prompt */}
+      <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-5">
+        <p className="text-sm font-semibold text-zinc-400">
+          Translate to Japanese (romaji)
+        </p>
+        <p className="mt-2 text-lg font-bold text-white">{phrase.english}</p>
+        <span className="mt-2 inline-block rounded-full border border-zinc-700 px-2 py-0.5 text-xs text-zinc-500">
+          {phrase.level}
         </span>
       </div>
 
-      <p style={{ marginTop: "1rem", fontWeight: "bold" }}>
-        Translate the following sentence (ENGLISH to JAPANESE):
-      </p>
-
-      {/* FRASE QUE TIENE QUE TRADUCIR */}
-      <blockquote
-        style={{
-          marginTop: "0.5rem",
-          padding: "0.75rem",
-          borderLeft: "4px solid #999",
-        }}
-      >
-        {phrase.english}
-      </blockquote>
-
-      <div>
-        <label style={{ display: "block", marginBottom: "0.25rem" }}>
-          Your answer (romaji):
-        </label>
-
-        {/* INPUT */}
+      {/* Input */}
+      <div className="space-y-3">
         <input
           type="text"
           value={userInput}
           onChange={(e) => setUserInput(e.target.value)}
-          placeholder="Type your translation in romaji"
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            border: "1px solid #ccc",
-          }}
+          onKeyDown={(e) => e.key === "Enter" && handleCheck()}
+          placeholder="Type your translation in romaji..."
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white transition focus:border-fuchsia-500 focus:shadow-[0_0_10px_rgba(217,70,239,0.3)] focus:outline-none"
         />
 
-        {/* BOTÓN PARA VERIFICAR SI LA RESPUESTA ES CORRECTA */}
-        <button
-          onClick={handleCheck}
-          style={{
-            marginTop: "0.75rem",
-            padding: "0.5rem 1rem",
-            border: "1px solid #333",
-            background: "#000",
-            color: "#fff",
-            cursor: "pointer",
-          }}
-        >
-          Check
-        </button>
-
-        {/* MENSAJE DE RESULTADO: (Tras presionar check) */}
-        {isCorrect !== null && (
-          <p
-            style={{
-              marginTop: "0.75rem",
-              fontWeight: "bold",
-              color: isCorrect ? "green" : "red",
-            }}
-          >
-            {isCorrect ? "Correct!" : "Incorrect"}
-          </p>
-        )}
-
-        {/* muestra el input en tiempo real*/}
-        <p style={{ marginTop: "0.5rem", fontSize: "0.9rem", opacity: 0.7 }}>
-          You typed: <code>{userInput}</code>
+        <p className="text-xs text-zinc-600">
+          You typed: <code className="text-zinc-400">{userInput}</code>
         </p>
       </div>
 
-      {/* boton de show answer*/}
-      <button
-        onClick={() => setShowAnswer(true)}
-        style={{
-          marginTop: "0.75rem",
-          padding: "0.5rem 1rem",
-          border: "1px solid #555",
-          background: "#000",
-          color: "#fff",
-          cursor: "pointer",
-        }}
-      >
-        Show answer
-      </button>
-
-      {/* RESPUESTA CORRECTA: aparece solo cuando el usuario pulsa "Show answer" */}
-      {showAnswer && (
-        <div
-          style={{
-            marginTop: "1rem",
-            padding: "0.75rem",
-            border: "1px solid #ddd",
-            background: "#000",
-            color: "#fff",
-          }}
+      {/* Check + Show answer */}
+      <div className="flex gap-3">
+        <button
+          onClick={handleCheck}
+          className="rounded-lg border border-fuchsia-500 bg-black px-5 py-2 text-fuchsia-400 transition hover:bg-fuchsia-500 hover:text-black hover:shadow-[0_0_15px_rgba(217,70,239,0.5)]"
         >
-          <p>
-            <strong>Romaji:</strong> {phrase.romaji}
+          Check
+        </button>
+        <button
+          onClick={() => setShowAnswer(true)}
+          className="rounded-lg border border-zinc-700 bg-black px-5 py-2 text-zinc-400 transition hover:border-fuchsia-500 hover:text-fuchsia-400 hover:shadow-[0_0_10px_rgba(217,70,239,0.3)]"
+        >
+          Show answer
+        </button>
+      </div>
+
+      {/* Result */}
+      {isCorrect !== null && (
+        <p
+          className={`text-sm font-bold ${
+            isCorrect
+              ? "text-fuchsia-400 drop-shadow-[0_0_8px_rgba(217,70,239,0.7)]"
+              : "text-red-400"
+          }`}
+        >
+          {isCorrect ? "Correct!" : "Incorrect"}
+        </p>
+      )}
+
+      {/* Answer reveal */}
+      {showAnswer && (
+        <div className="rounded-xl border border-fuchsia-500/30 bg-zinc-900 p-4 shadow-[0_0_15px_rgba(217,70,239,0.15)]">
+          <p className="text-sm text-white">
+            <span className="font-semibold text-fuchsia-400">Romaji: </span>
+            {phrase.romaji}
           </p>
-          <p>
-            <strong>Japanese:</strong> {phrase.japanese}
+          <p className="mt-1 text-sm text-white">
+            <span className="font-semibold text-fuchsia-400">Japanese: </span>
+            {phrase.japanese}
           </p>
-          <p style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
-            <strong>Explanation:</strong> {phrase.explanation}
+          <p className="mt-2 text-xs text-zinc-400">
+            <span className="font-semibold text-zinc-300">Explanation: </span>
+            {phrase.explanation}
           </p>
         </div>
       )}
 
-      {/* SELF-RATING */}
-      <div style={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}>
-        {/* para correcta*/}
+      {/* Self-rating */}
+      <div className="flex gap-3">
         <button
-          onClick={() => {
-            // hace el check automáticamente antes de permitir marcar como correct
-            const user = normalize(userInput);
-            const expected = normalize(phrase.romaji);
-            const result = user === expected;
-            setIsCorrect(result);
-
-            // solo permite marcar como correct si la respuesta coincide
-            if (result) {
-              setSelfRating("correct");
-            } else {
-              // si no coincide, muestra el mensaje por 2 segundos y lo borra
-              setShowWarning(true);
-              setTimeout(() => setShowWarning(false), 2000);
-            }
-          }}
-          style={{
-            padding: "0.5rem 1rem",
-            border:
-              selfRating === "correct" ? "2px solid green" : "1px solid #555",
-            background: selfRating === "correct" ? "#d4edda" : "#000",
-            color: selfRating === "correct" ? "green" : "#fff",
-            cursor: "pointer",
-            fontWeight: selfRating === "correct" ? "bold" : "normal",
-          }}
+          onClick={handleCorrect}
+          className={`rounded-lg border px-5 py-2 transition ${
+            selfRating === "correct"
+              ? "border-fuchsia-400 bg-fuchsia-500 text-black font-bold shadow-[0_0_15px_rgba(217,70,239,0.5)]"
+              : "border-zinc-700 bg-black text-zinc-400 hover:border-fuchsia-500 hover:text-fuchsia-400 hover:shadow-[0_0_10px_rgba(217,70,239,0.3)]"
+          }`}
         >
           Correct
         </button>
-
-        {/* para incorrecta*/}
         <button
           onClick={() => setSelfRating("incorrect")}
-          style={{
-            padding: "0.5rem 1rem",
-            border:
-              selfRating === "incorrect" ? "2px solid red" : "1px solid #555",
-            background: selfRating === "incorrect" ? "#f8d7da" : "#000",
-            color: selfRating === "incorrect" ? "red" : "#fff",
-            cursor: "pointer",
-            fontWeight: selfRating === "incorrect" ? "bold" : "normal",
-          }}
+          className={`rounded-lg border px-5 py-2 transition ${
+            selfRating === "incorrect"
+              ? "border-red-400 bg-red-500/20 text-red-400 font-bold"
+              : "border-zinc-700 bg-black text-zinc-400 hover:border-red-400 hover:text-red-400"
+          }`}
         >
           Incorrect
         </button>
       </div>
 
-      {/* mensaje temporal si intenta marcar correct sin que coincida */}
+      {/* Warning */}
       {showWarning && (
-        <p
-          style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "orange" }}
-        >
+        <p className="text-xs text-amber-400">
           You must enter the correct answer first
         </p>
       )}
 
-      {/* boton para next */}
+      {/* Next */}
       <button
         onClick={handleNext}
-        style={{
-          marginTop: "0.75rem",
-          padding: "0.5rem 1rem",
-          border: "1px solid #333",
-          background: "#000",
-          color: "#fff",
-          cursor: "pointer",
-        }}
+        className="w-full rounded-lg border border-fuchsia-500 bg-black py-3 text-fuchsia-400 transition hover:bg-fuchsia-500 hover:text-black hover:shadow-[0_0_20px_rgba(217,70,239,0.5)]"
       >
         Next
       </button>
-
-      {/* NIVEL DE DIFICULTAD DE LA FRASE ACTUAL */}
-      <p style={{ marginTop: "1rem", fontSize: "0.9rem", opacity: 0.7 }}>
-        (Level: {phrase.level})
-      </p>
     </section>
   );
 }
