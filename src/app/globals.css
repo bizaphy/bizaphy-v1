@@ -28,7 +28,7 @@ body {
 /* EFECTO NEON*/
 @layer components {
   .neon-card {
-    @apply rounded-xl border border-fuchsia-500 p-5 transition;
+    @apply rounded-xl border border-fuchsia-500 bg-zinc-950/40 p-5 transition;
   }
 
   .neon-card:hover {
