@@ -13,7 +13,7 @@ export default function ProjectCard({
   description,
 }: ProjectCardProps) {
   return (
-    <article className="neon-card group hologram-flicker">
+    <article className="neon-card">
       <h2 className="text-lg font-semibold neon-card-title">
         <TextScramble text={title} />
       </h2>

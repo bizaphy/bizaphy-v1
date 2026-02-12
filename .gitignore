@@ -43,4 +43,5 @@ next-env.d.ts
 # #CLAUDE
 /.claude
 /CLAUDE.md
+/TUTORIAL.md
 /.gemini
