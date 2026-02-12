@@ -63,7 +63,7 @@ function randomSparseText(length: number): string {
  * lentamente como un feed de datos corrupto. Periódicamente una línea sufre un
  * glitch visual (client component).
  */
-export default function DigitalRain({ opacity = 0.15 }: DigitalRainProps) {
+export default function DigitalRain({ opacity = 0.10 }: DigitalRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -125,9 +125,9 @@ export default function DigitalRain({ opacity = 0.15 }: DigitalRainProps) {
         const count = 1 + Math.floor(Math.random() * 3);
         for (let i = 0; i < count; i++) {
           const line = lines[Math.floor(Math.random() * lines.length)];
-          line.glitchTimer = 15 + Math.floor(Math.random() * 10);
-          line.glitchShiftY = (Math.random() - 0.5) * 6;
-          line.brightness = 0.7 + Math.random() * 0.3;
+          line.glitchTimer = 20 + Math.floor(Math.random() * 15);
+          line.glitchShiftY = (Math.random() - 0.5) * 8;
+          line.brightness = 2.5 + Math.random() * 1.5;
           line.hue = Math.random() > 0.5 ? 292 : 190;
           line.text = randomSparseText(line.text.length);
         }
