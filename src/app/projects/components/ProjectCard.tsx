@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TextScramble from "@/app/components/effects/TextScramble";
 
 type ProjectCardProps = {
   slug: string;
@@ -12,8 +13,10 @@ export default function ProjectCard({
   description,
 }: ProjectCardProps) {
   return (
-    <article className="neon-card group">
-      <h2 className="text-lg font-semibold neon-card-title">{title}</h2>
+    <article className="neon-card group hologram-flicker">
+      <h2 className="text-lg font-semibold neon-card-title">
+        <TextScramble text={title} />
+      </h2>
 
       <p className="mt-2 text-sm text-zinc-600 neon-card-text">{description}</p>
 
