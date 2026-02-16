@@ -34,4 +34,16 @@ export const projects: Project[] = [
     title: "Tic Tac Toe",
     description: "Juego clásico de Tic Tac Toe con estilo Neon.",
   },
+  {
+    slug: "clima",
+    title: "Clima",
+    description:
+      "Dashboard de clima en tiempo real para Sapporo, Reikiavik y Santiago.",
+  },
+  {
+    slug: "hora-mundial",
+    title: "Hora Mundial",
+    description:
+      "Reloj mundial en tiempo real con 10 ciudades del mundo.",
+  },
 ];

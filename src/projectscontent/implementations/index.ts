@@ -5,6 +5,8 @@ import useMosis from "./useMosis";
 import MCPTest from "./mcp-project";
 import excelBakery from "./excel-bakery";
 import TicTacToe from "./tic-tac-toe";
+import WeatherDashboard from "./clima";
+import WorldClock from "./hora-mundial";
 //
 export const projectsMap = {
   "translation-checker": TranslationChecker,
@@ -12,6 +14,8 @@ export const projectsMap = {
   "mcp-project": MCPTest,
   "excel-bakery": excelBakery,
   "tic-tac-toe": TicTacToe,
+  "clima": WeatherDashboard,
+  "hora-mundial": WorldClock,
 };
 
 export type ProjectSlug = keyof typeof projectsMap;
