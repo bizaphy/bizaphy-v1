@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Nav() {
   return (
-    <nav className="neon-nav flex items-center border-b border-fuchsia-500 px-6 py-4">
+    <nav className="neon-nav relative z-20 flex items-center border-b border-fuchsia-500 bg-black px-6 py-4">
       <Link
         href="/"
         className="neon-link flex items-center gap-2 font-bold tracking-widest"

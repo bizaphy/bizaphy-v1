@@ -1,12 +1,11 @@
 //page.tsx es la pagina renderizable, dentro de la carpeta, que en next corresponde al segmento URL
 import BlogList from "./components/BlogList";
 import TextScramble from "@/app/components/effects/TextScramble";
-import DigitalRain from "@/app/components/effects/DigitalRain";
+
 
 export default function BlogPage() {
   return (
     <section className="relative space-y-8">
-      <DigitalRain />
       <div className="relative z-10 space-y-8">
         <h1 className="text-3xl font-bold">
           <TextScramble text="Neon Blog" />

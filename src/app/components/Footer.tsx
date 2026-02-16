@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="neon-nav flex items-center justify-between border-t border-fuchsia-500 px-6 py-4 text-sm text-zinc-500">
+    <footer className="neon-nav relative z-20 flex items-center justify-between border-t border-fuchsia-500 bg-black px-6 py-4 text-sm text-zinc-500">
       <p>
         <span className="text-fuchsia-500">&gt;</span> {new Date().getFullYear()} NeonLab
       </p>

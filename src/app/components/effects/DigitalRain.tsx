@@ -90,7 +90,7 @@ export default function DigitalRain({ opacity = 0.10 }: DigitalRainProps) {
       text: randomSparseText(Math.ceil(window.innerWidth / (fontSize * 0.6)) + 20),
       offset: Math.random() * 500,
       hue: 292,
-      brightness: 0.15 + Math.random() * 0.35,
+      brightness: 0.08 + Math.random() * 0.22,
       glitchTimer: 0,
       glitchShiftY: 0,
     });
@@ -142,7 +142,7 @@ export default function DigitalRain({ opacity = 0.10 }: DigitalRainProps) {
           line.glitchTimer--;
           if (line.glitchTimer === 0) {
             line.glitchShiftY = 0;
-            line.brightness = 0.15 + Math.random() * 0.35;
+            line.brightness = 0.08 + Math.random() * 0.22;
             line.hue = 292;
           }
         }

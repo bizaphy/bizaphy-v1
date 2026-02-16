@@ -3,6 +3,7 @@ import { Oxanium } from "next/font/google";
 import "./globals.css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
+import DigitalRain from "./components/effects/DigitalRain";
 
 const oxanium = Oxanium({
   subsets: ["latin"],
@@ -25,10 +26,11 @@ export default function RootLayout({
       <body
         className={`${oxanium.className} antialiased min-h-screen flex flex-col`}
       >
+        <DigitalRain />
         <Nav />
 
         {/* contenido principal */}
-        <main className="flex-1">{children}</main>
+        <main className="relative z-10 flex-1 min-h-screen">{children}</main>
 
         <Footer />
       </body>
