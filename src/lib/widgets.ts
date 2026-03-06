@@ -39,7 +39,7 @@ export const widgets: Widget[] = [
   },
   {
     slug: "btc",
-    title: "BTC/USD",
+    title: "Mercados",
   },
   {
     slug: "hora-mundial",

@@ -46,4 +46,10 @@ export const projects: Project[] = [
     description:
       "Reloj mundial en tiempo real con 10 ciudades del mundo.",
   },
+  {
+    slug: "mercados",
+    title: "Mercados",
+    description:
+      "Dashboard de mercados financieros: BTC, S&P 500 y NASDAQ en tiempo real.",
+  },
 ];
