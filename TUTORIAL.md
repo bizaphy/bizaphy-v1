@@ -111,6 +111,9 @@ src/
 │   │   └── effects/              ← Efectos visuales (canvas, animaciones)
 │   │       ├── TextScramble.tsx
 │   │       └── DigitalRain.tsx
+│   ├── api/                      ← Route Handlers (API endpoints server-side)
+│   │   └── market/
+│   │       └── route.ts          ← GET /api/market (proxy Yahoo Finance)
 │   ├── lab/                      ← Sección Labs
 │   │   ├── components/
 │   │   │   ├── LabList.tsx
@@ -259,20 +262,14 @@ El archivo `src/app/globals.css` se construye en capas, de lo más general a lo 
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ededed;
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --foreground: #ededed;
-  }
 }
 
 body {
@@ -285,10 +282,11 @@ body {
 **¿Qué está pasando aquí?**
 
 1. `@import "tailwindcss"` — activa Tailwind CSS 4. Sin esta línea, ninguna clase de Tailwind funciona.
-2. Las variables CSS (`:root`) definen colores que cambian según el tema del sistema operativo. En modo claro, fondo blanco y texto oscuro. En modo oscuro, fondo negro (`#000000`) y texto claro.
-3. `@theme inline` registra estas variables dentro del sistema de Tailwind para que puedan usarse con clases como `bg-background`.
+2. Las variables CSS (`:root`) definen fondo negro y texto claro directamente, sin media query. NeonLab fuerza dark mode siempre porque toda la estética cyberpunk está diseñada para fondo oscuro.
+3. `color-scheme: dark` le dice al navegador que trate elementos nativos (inputs, scrollbars, selects) en modo oscuro.
+4. `@theme inline` registra estas variables dentro del sistema de Tailwind para que puedan usarse con clases como `bg-background`.
 
-**¿Por qué variables CSS y no solo clases de Tailwind?** Porque las variables CSS cambian dinámicamente según el media query `prefers-color-scheme`. Tailwind no puede hacer eso con clases estáticas — necesita un punto de verdad que cambie en runtime.
+**¿Por qué forzar dark mode?** Porque la estética neon/cyberpunk depende del contraste con fondo negro. Los glows fuchsia, el DigitalRain y las sombras neon se ven horribles sobre fondo blanco. En lugar de mantener un modo claro que nunca se usaría bien, eliminamos el `@media (prefers-color-scheme: dark)` y forzamos los colores oscuros directamente en `:root`.
 
 ### 4.2 Clases neon reutilizables (el sistema visual)
 
@@ -1150,6 +1148,7 @@ export const projects: Project[] = [
   { slug: "tic-tac-toe", title: "Tic Tac Toe", description: "Juego clásico con estilo Neon." },
   { slug: "clima", title: "Clima", description: "Dashboard de clima en tiempo real para Sapporo, Reikiavik y Santiago." },
   { slug: "hora-mundial", title: "Hora Mundial", description: "Reloj mundial en tiempo real con 10 ciudades del mundo." },
+  { slug: "mercados", title: "Mercados", description: "Dashboard de mercados financieros: BTC, S&P 500 y NASDAQ en tiempo real." },
   // ...
 ];
 ```
@@ -1161,11 +1160,13 @@ export const projects: Project[] = [
 import TicTacToe from "./tic-tac-toe";
 import WeatherDashboard from "./clima";
 import WorldClock from "./hora-mundial";
+import MarketDashboard from "./mercados";
 
 export const projectsMap = {
   "tic-tac-toe": TicTacToe,
   "clima": WeatherDashboard,
   "hora-mundial": WorldClock,
+  "mercados": MarketDashboard,
 };
 
 export type ProjectSlug = keyof typeof projectsMap;
@@ -1189,6 +1190,11 @@ Algunos proyectos consumen APIs externas en tiempo real. El patrón que siguen e
 - Usa `Intl.DateTimeFormat` con zonas horarias IANA para 10 ciudades.
 - Se actualiza cada segundo con `setInterval`.
 - Muestra hora en formato HH:MM:SS y offset UTC.
+
+**Ejemplo: MarketDashboard** (`src/projectscontent/implementations/mercados/MarketDashboard.tsx`):
+- Consulta el Route Handler `/api/market` que actúa como proxy server-side hacia Yahoo Finance.
+- Muestra BTC, S&P 500 y NASDAQ con precio actual y cambio porcentual (verde/rojo).
+- Usa Route Handler para evitar restricciones CORS (ver sección sobre Route Handlers más abajo).
 
 ### ProjectCard
 
@@ -1289,7 +1295,7 @@ export type Widget = {
 export const widgets: Widget[] = [
   { slug: "clima", title: "Clima", rowSpan: 2 },              // alto: ocupa 2 filas
   { slug: "nota-del-dia", title: "Nota del día" },             // tamaño normal (1x1)
-  { slug: "btc", title: "BTC/USD" },                           // tamaño normal (1x1)
+  { slug: "btc", title: "Mercados" },                           // tamaño normal (1x1)
   { slug: "hora-mundial", title: "Hora mundial", colSpan: 2 }, // ancho: ocupa 2 columnas
   { slug: "tareas", title: "Tareas" },                         // tamaño normal (1x1)
   { slug: "stats", title: "Stats" },                           // tamaño normal (1x1)
@@ -1388,7 +1394,75 @@ export default function HoraMundialWidget() {
 }
 ```
 
-**El patrón widget → proyecto:** los widgets de clima y hora-mundial funcionan como previews compactos (pocas ciudades, datos resumidos) envueltos en un `<Link>` que lleva al proyecto completo (más ciudades, más detalle). Esto crea una jerarquía de información: el home muestra un vistazo rápido, y el proyecto muestra todo.
+**Widget con Route Handler** (Client Component + API server-side):
+
+```tsx
+// src/homecontent/btc/index.tsx (simplificado)
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
+// Fetch a /api/market (Route Handler propio) para BTC, S&P 500 y NASDAQ
+// Muestra nombre + precio + cambio porcentual (verde/rojo)
+// Clickeable hacia /projects/mercados con "Ver más →"
+
+export default function BtcWidget() {
+  // ... useEffect con fetch a "/api/market" ...
+  return (
+    <Link href="/projects/mercados" className="...">
+      {state.data.map((q) => (
+        <div key={q.label} className="flex items-center justify-between">
+          <span className="text-sm text-zinc-300">{q.label}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-sm font-bold text-white">
+              {formatPrice(q.price, q.label === "BTC" ? 0 : 2)}
+            </span>
+            <span className={q.changePercent >= 0 ? "text-green-400" : "text-red-400"}>
+              {q.changePercent.toFixed(2)}%
+            </span>
+          </div>
+        </div>
+      ))}
+      <span className="... text-fuchsia-500">Ver más →</span>
+    </Link>
+  );
+}
+```
+
+**¿Por qué este widget usa `/api/market` en vez de una API externa directamente?** Porque las APIs de mercados financieros (Yahoo Finance, etc.) tienen restricciones CORS que bloquean las peticiones desde el navegador. La solución es un **Route Handler** de Next.js (`src/app/api/market/route.ts`) que hace el fetch server-side y devuelve los datos al cliente. El navegador llama a `/api/market` (mismo dominio, sin CORS) y el servidor llama a Yahoo Finance (sin restricciones).
+
+```
+Navegador → /api/market (Route Handler, mismo origen) → Yahoo Finance (server-side, sin CORS)
+```
+
+```ts
+// src/app/api/market/route.ts (simplificado)
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  const symbols = ["BTC-USD", "%5EGSPC", "%5EIXIC"]; // BTC, S&P 500, NASDAQ
+  const data = await Promise.all(
+    symbols.map(async (symbol) => {
+      const res = await fetch(
+        `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`,
+        { headers: { "User-Agent": "Mozilla/5.0" }, next: { revalidate: 60 } }
+      );
+      const json = await res.json();
+      const meta = json.chart.result[0].meta;
+      return {
+        price: meta.regularMarketPrice,
+        changePercent: ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose) * 100,
+      };
+    })
+  );
+  return NextResponse.json({ data });
+}
+```
+
+Este es el primer Route Handler del proyecto. Vive en `src/app/api/market/route.ts` y Next.js lo expone automáticamente como endpoint `GET /api/market`. Cachea las respuestas de Yahoo Finance por 60 segundos con `next: { revalidate: 60 }`.
+
+**El patrón widget → proyecto:** los widgets de clima, hora-mundial y mercados funcionan como previews compactos envueltos en un `<Link>` que lleva al proyecto completo (más detalle). Esto crea una jerarquía de información: el home muestra un vistazo rápido, y el proyecto muestra todo.
 
 **¿Por qué cada widget solo exporta su contenido interno y no la card completa?** Porque la card (borde, fondo, padding, título) es responsabilidad de `WidgetCard`. El widget solo define qué va DENTRO de la card. Esto permite que todos los widgets tengan un diseño de card consistente sin duplicar código, y que el tamaño en el grid se controle desde la metadata.
 
@@ -1614,7 +1688,7 @@ Mismos 3 pasos, usando:
 
 ### Agregar un Widget que linkea a un Proyecto
 
-Este patrón combina un widget del home (preview compacto) con un proyecto (versión completa). Se usa en clima y hora-mundial:
+Este patrón combina un widget del home (preview compacto) con un proyecto (versión completa). Se usa en clima, hora-mundial y mercados:
 
 **Paso 1 — Crear el proyecto** (los 3 pasos de arriba):
 - Componente completo en `src/projectscontent/implementations/mi-proyecto/`
@@ -1644,8 +1718,9 @@ Porque el sistema está diseñado para que el contenido y la infraestructura sea
 | Container/Presentational | *List + *Card en cada sección | Separar la lógica de obtener datos de la lógica de mostrarlos | `LabList` obtiene, `LabCard` muestra |
 | Server Components (default) | Todo excepto lo interactivo | Renderizado en servidor, 0 JS al cliente, más rápido | `ServerTime`, `StatsWidget` |
 | Client Components (`"use client"`) | Counters, forms, effects, widgets con API | Interactividad con hooks (`useState`, `useEffect`) | `ClientCounter`, `TextScramble`, `ClimaWidget` |
-| Widget → Proyecto | Clima, Hora mundial | Preview compacto en home que linkea al proyecto completo | `ClimaWidget` → `/projects/clima` |
-| API fetch con cleanup | WeatherDashboard, ClimaWidget | Fetch en `useEffect` con `cancelled` flag para evitar memory leaks | `fetchCities()` con Open-Meteo |
+| Widget → Proyecto | Clima, Hora mundial, Mercados | Preview compacto en home que linkea al proyecto completo | `ClimaWidget` → `/projects/clima` |
+| API fetch con cleanup | WeatherDashboard, ClimaWidget, BtcWidget | Fetch en `useEffect` con `cancelled` flag para evitar memory leaks | `fetchCities()` con Open-Meteo |
+| Route Handler (API proxy) | Mercados (`/api/market`) | Proxy server-side para APIs externas con CORS | `route.ts` → Yahoo Finance |
 | Template re-mount | `template.tsx` en cada nivel | Animaciones de entrada que se re-ejecutan al navegar | `page-scan`, `page-glitch` |
 | Canvas effects | DigitalRain | Fondos animados performantes con un solo nodo DOM | Canvas con `requestAnimationFrame` |
 | CSS neon classes | `.neon-card`, `.neon-link`, `.neon-nav` | Sistema visual consistente definido UNA vez | `@layer components` en globals.css |
