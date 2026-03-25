@@ -38,6 +38,16 @@ export default function LabExplanation({
             Explicación del código
           </h2>
 
+          {/* 0. Estructura del código */}
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              0. Estructura del código
+            </h3>
+            <pre className="rounded-lg border border-zinc-800 bg-zinc-900/80 p-4 overflow-x-auto text-sm text-zinc-300 leading-relaxed">
+              <code>{explanation.code}</code>
+            </pre>
+          </div>
+
           {/* 1. ¿Qué hace en general? */}
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">

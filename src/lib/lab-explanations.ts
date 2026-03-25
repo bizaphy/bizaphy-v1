@@ -9,6 +9,8 @@
 
 export type LabExplanation = {
   slug: string;
+  /** Sección 0 — Código fuente del lab */
+  code: string;
   /** Sección 1 — ¿Qué hace en general? */
   general: string;
   /** Sección 2 — ¿Por qué no funciona la solución obvia? */
@@ -27,6 +29,25 @@ export const labExplanations: LabExplanation[] = [
   /* ------------------------------------------------------------------ */
   {
     slug: "client-counter",
+    code:
+`"use client";
+
+import { useState } from "react";
+
+export default function ClientCounter() {
+  const [count, setCount] = useState(0);
+  return (
+    <div className="border p-4 rounded">
+      <p>Count: {count}</p>
+      <button
+        onClick={() => setCount(count + 1)}
+        className="mt-2 px-3 py-1 border rounded"
+      >
+        Increment
+      </button>
+    </div>
+  );
+}`,
     general:
       `Este componente es un contador interactivo que vive completamente en el navegador. ` +
       `Recibe cero props, mantiene un número interno (count) que arranca en 0, y cada vez que ` +
@@ -103,6 +124,30 @@ export const labExplanations: LabExplanation[] = [
   /* ------------------------------------------------------------------ */
   {
     slug: "client-clock",
+    code:
+`"use client";
+import { useEffect, useState } from "react";
+
+export default function ClientClock() {
+  const [time, setTime] = useState<string>("");
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTime(new Date().toLocaleTimeString());
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  return (
+    <div className="border p-4 rounded">
+      <p>Client time (updates every second):</p>
+      <strong>{time}</strong>
+    </div>
+  );
+}`,
     general:
       `Este componente muestra la hora actual del navegador del usuario, actualizada cada segundo. ` +
       `No recibe props. Internamente mantiene un string time en estado que representa la hora ` +
@@ -181,6 +226,17 @@ export const labExplanations: LabExplanation[] = [
   /* ------------------------------------------------------------------ */
   {
     slug: "server-time",
+    code:
+`export default function ServerTime() {
+  const time = new Date().toLocaleTimeString();
+
+  return (
+    <div className="border p-4 rounded">
+      <p>Server time (fixed per request):</p>
+      <strong>{time}</strong>
+    </div>
+  );
+}`,
     general:
       `Este componente muestra la hora del servidor en el momento en que se procesó la petición. ` +
       `A diferencia de ClientClock, esta hora no se actualiza: es un valor fijo que refleja el ` +
@@ -246,6 +302,29 @@ export const labExplanations: LabExplanation[] = [
   /* ------------------------------------------------------------------ */
   {
     slug: "client-form",
+    code:
+`"use client";
+
+import { useState } from "react";
+
+export default function ClientForm() {
+  const [name, setName] = useState("");
+
+  return (
+    <div className="border p-4 rounded">
+      <label className="block mb-2">
+        Your name:
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="ml-2 border px-2 py-1"
+        />
+      </label>
+
+      <p>Hello, {name || "anonymous"}</p>
+    </div>
+  );
+}`,
     general:
       `Este componente es un formulario controlado que tiene un campo de texto donde el usuario ` +
       `escribe su nombre y un párrafo que saluda con "Hello, {nombre}". Si el campo está vacío, ` +
@@ -321,6 +400,23 @@ export const labExplanations: LabExplanation[] = [
   /* ------------------------------------------------------------------ */
   {
     slug: "server-fetch",
+    code:
+`type Todo = {
+  id: number;
+  title: string;
+};
+
+export default async function ServerFetch() {
+  const res = await fetch("https://jsonplaceholder.typicode.com/todos/1");
+  const todo: Todo = await res.json();
+
+  return (
+    <div className="border p-4 rounded">
+      <p>Fetched on server:</p>
+      <strong>{todo.title}</strong>
+    </div>
+  );
+}`,
     general:
       `Este componente hace un fetch a una API externa (JSONPlaceholder) directamente desde el ` +
       `servidor y muestra el título de un todo. Es un async Server Component: una función con ` +
@@ -397,6 +493,32 @@ export const labExplanations: LabExplanation[] = [
   /* ------------------------------------------------------------------ */
   {
     slug: "client-fetch",
+    code:
+`"use client";
+
+import { useEffect, useState } from "react";
+
+type Todo = {
+  id: number;
+  title: string;
+};
+
+export default function ClientFetch() {
+  const [todo, setTodo] = useState<Todo | null>(null);
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/todos/1")
+      .then((res) => res.json())
+      .then(setTodo);
+  }, []);
+
+  return (
+    <div className="border p-4 rounded">
+      <p>Fetched on client:</p>
+      {todo ? <strong>{todo.title}</strong> : <span>Loading…</span>}
+    </div>
+  );
+}`,
     general:
       `Este componente hace el mismo fetch que ServerFetch (obtener un todo de JSONPlaceholder), ` +
       `pero desde el navegador del usuario, no desde el servidor. Usa useEffect para disparar ` +
