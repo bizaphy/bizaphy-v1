@@ -1,9 +1,21 @@
-/** Widget dummy de estadísticas. Servidor component con datos estáticos. */
+import { posts } from "@/lib/posts";
+import { labs } from "@/lib/labs";
+import { projects } from "@/lib/projects/projects";
+
+type StatItem = {
+  label: string;
+  value: string;
+};
+
+/**
+ * Widget de estadísticas del sitio. Server component con datos reales
+ * derivados de los registros de posts, labs y proyectos.
+ */
 export default function StatsWidget() {
-  const stats = [
-    { label: "Labs completados", value: "5/8" },
-    { label: "Proyectos", value: "3" },
-    { label: "Posts", value: "7" },
+  const stats: StatItem[] = [
+    { label: "Labs", value: String(labs.length) },
+    { label: "Proyectos", value: String(projects.length) },
+    { label: "Posts", value: String(posts.length) },
   ];
 
   return (
@@ -11,7 +23,7 @@ export default function StatsWidget() {
       {stats.map((stat) => (
         <div key={stat.label} className="flex items-center justify-between">
           <span className="text-sm text-zinc-400">{stat.label}</span>
-          <span className="text-sm font-bold text-white">{stat.value}</span>
+          <span className="text-sm font-bold text-fuchsia-400">{stat.value}</span>
         </div>
       ))}
     </div>
