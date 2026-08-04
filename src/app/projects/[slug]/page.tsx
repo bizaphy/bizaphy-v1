@@ -1,6 +1,6 @@
 // app/projects/[slug]/page.tsx
-import { projects } from "@/lib/projects/projects";
-import { projectsMap, ProjectSlug } from "@/projectscontent/implementations";
+import { projects } from "@/lib/projects";
+import { projectsMap, ProjectSlug } from "@/content/projects";
 
 type PageProps = {
   params: Promise<{ slug: string }>;

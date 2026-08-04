@@ -8,15 +8,12 @@ export default function Nav() {
         className="neon-link flex items-center gap-2 font-bold tracking-widest"
       >
         <span className="neon-led inline-block h-2 w-2 rounded-full bg-fuchsia-500" />
-        NEONLAB
+        bizaphy
       </Link>
 
       <div className="ml-auto flex gap-5">
         <Link href="/blog" className="neon-link">
           <span className="text-fuchsia-500">&gt;</span> Blog
-        </Link>
-        <Link href="/lab" className="neon-link">
-          <span className="text-fuchsia-500">&gt;</span> Lab
         </Link>
         <Link href="/projects" className="neon-link">
           <span className="text-fuchsia-500">&gt;</span> Projects

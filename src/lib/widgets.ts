@@ -25,7 +25,7 @@ export type Widget = {
 /**
  * Array de widgets que se renderizan en el dashboard del home.
  * El orden del array determina el orden visual en el grid.
- * Cada slug debe tener un componente correspondiente en `src/homecontent/index.ts`.
+ * Cada slug debe tener un componente correspondiente en `src/content/widgets/index.ts`.
  */
 export const widgets: Widget[] = [
   {

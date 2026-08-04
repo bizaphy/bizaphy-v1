@@ -1,6 +1,5 @@
 import { posts } from "@/lib/posts";
-import { labs } from "@/lib/labs";
-import { projects } from "@/lib/projects/projects";
+import { projects } from "@/lib/projects";
 
 type StatItem = {
   label: string;
@@ -9,11 +8,10 @@ type StatItem = {
 
 /**
  * Widget de estadísticas del sitio. Server component con datos reales
- * derivados de los registros de posts, labs y proyectos.
+ * derivados de los registros de posts y proyectos.
  */
 export default function StatsWidget() {
   const stats: StatItem[] = [
-    { label: "Labs", value: String(labs.length) },
     { label: "Proyectos", value: String(projects.length) },
     { label: "Posts", value: String(posts.length) },
   ];
@@ -23,7 +21,9 @@ export default function StatsWidget() {
       {stats.map((stat) => (
         <div key={stat.label} className="flex items-center justify-between">
           <span className="text-sm text-zinc-400">{stat.label}</span>
-          <span className="text-sm font-bold text-fuchsia-400">{stat.value}</span>
+          <span className="text-sm font-bold text-fuchsia-400">
+            {stat.value}
+          </span>
         </div>
       ))}
     </div>
