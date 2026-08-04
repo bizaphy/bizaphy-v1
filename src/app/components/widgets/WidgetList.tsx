@@ -1,5 +1,5 @@
 import { widgets } from "@/lib/widgets";
-import { widgetsMap, type WidgetSlug } from "@/homecontent/index";
+import { widgetsMap, type WidgetSlug } from "@/content/widgets";
 import WidgetCard from "./WidgetCard";
 
 /**

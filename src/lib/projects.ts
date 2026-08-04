@@ -1,4 +1,4 @@
-//lib/projects/projects.ts
+//lib/projects.ts
 //simulador de bdd/api para projects
 
 export type Project = {

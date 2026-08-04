@@ -1,7 +1,7 @@
 import Image from "next/image";
 import TextScramble from "@/app/components/effects/TextScramble";
 
-import WidgetList from "@/app/components/home/WidgetList";
+import WidgetList from "@/app/components/widgets/WidgetList";
 
 /** Página principal del dashboard con hero y grid de widgets. */
 export default function Home() {
