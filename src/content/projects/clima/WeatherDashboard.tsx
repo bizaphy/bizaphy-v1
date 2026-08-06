@@ -6,6 +6,7 @@ type CityConfig = {
   name: string;
   latitude: number;
   longitude: number;
+  wikipediaSlug: string;
 };
 
 type WeatherData = {
@@ -13,6 +14,7 @@ type WeatherData = {
   temperature: number;
   weatherCode: number;
   windSpeed: number;
+  wikipediaSlug: string;
 };
 
 type FetchState = {
@@ -22,14 +24,22 @@ type FetchState = {
 };
 
 const CITIES: CityConfig[] = [
-  { name: "Sapporo", latitude: 43.06, longitude: 141.35 },
-  { name: "Reikiavik", latitude: 64.15, longitude: -21.94 },
-  { name: "Santiago", latitude: -33.45, longitude: -70.67 },
-  { name: "Tokio", latitude: 35.68, longitude: 139.69 },
-  { name: "Londres", latitude: 51.51, longitude: -0.13 },
-  { name: "Lima", latitude: -12.05, longitude: -77.04 },
-  { name: "Moscú", latitude: 55.76, longitude: 37.62 },
-  { name: "Pekín", latitude: 39.91, longitude: 116.39 },
+  { name: "Sapporo", latitude: 43.06, longitude: 141.35, wikipediaSlug: "Sapporo" },
+  { name: "Reikiavik", latitude: 64.15, longitude: -21.94, wikipediaSlug: "Reykjav%C3%ADk" },
+  { name: "Santiago", latitude: -33.45, longitude: -70.67, wikipediaSlug: "Santiago" },
+  { name: "Tokio", latitude: 35.68, longitude: 139.69, wikipediaSlug: "Tokyo" },
+  { name: "Londres", latitude: 51.51, longitude: -0.13, wikipediaSlug: "London" },
+  { name: "Lima", latitude: -12.05, longitude: -77.04, wikipediaSlug: "Lima" },
+  { name: "Moscú", latitude: 55.76, longitude: 37.62, wikipediaSlug: "Moscow" },
+  { name: "Pekín", latitude: 39.91, longitude: 116.39, wikipediaSlug: "Beijing" },
+  { name: "Puerto Williams", latitude: -54.94, longitude: -67.61, wikipediaSlug: "Puerto_Williams" },
+  { name: "Perth", latitude: -31.95, longitude: 115.86, wikipediaSlug: "Perth" },
+  { name: "Johannesburgo", latitude: -26.20, longitude: 28.03, wikipediaSlug: "Johannesburg" },
+  { name: "Sofía", latitude: 42.70, longitude: 23.32, wikipediaSlug: "Sofia" },
+  { name: "Damasco", latitude: 33.51, longitude: 36.29, wikipediaSlug: "Damascus" },
+  { name: "Hanga Roa", latitude: -27.15, longitude: -109.43, wikipediaSlug: "Hanga_Roa" },
+  { name: "Jakarta", latitude: -6.21, longitude: 106.85, wikipediaSlug: "Jakarta" },
+  { name: "Bilbao", latitude: 43.26, longitude: -2.93, wikipediaSlug: "Bilbao" },
 ];
 
 /**
@@ -105,6 +115,7 @@ async function fetchCities(cities: CityConfig[]): Promise<WeatherData[]> {
         temperature: json.current.temperature_2m as number,
         weatherCode: json.current.weather_code as number,
         windSpeed: json.current.wind_speed_10m as number,
+        wikipediaSlug: city.wikipediaSlug,
       };
     })
   );
@@ -180,9 +191,13 @@ export default function WeatherDashboard() {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {state.data.map((weather) => (
-        <article
+        <a
           key={weather.city}
-          className="rounded-xl border border-zinc-800 bg-zinc-950 p-6 transition hover:border-fuchsia-500 hover:shadow-[0_0_20px_rgba(217,70,239,0.3)]"
+          href={`https://en.wikipedia.org/wiki/${weather.wikipediaSlug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={`Ver ${weather.city} en Wikipedia (EN)`}
+          className="block rounded-xl border border-zinc-800 bg-zinc-950 p-6 transition hover:border-fuchsia-500 hover:shadow-[0_0_20px_rgba(217,70,239,0.3)]"
         >
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-fuchsia-400">
             {weather.city}
@@ -205,7 +220,7 @@ export default function WeatherDashboard() {
               {weather.windSpeed} km/h
             </span>
           </div>
-        </article>
+        </a>
       ))}
     </div>
   );
