@@ -7,13 +7,14 @@ export type Post = {
 
 export const posts: Post[] = [
   {
-    slug: "hola-neonlab",
-    title: "Hola NeonLab",
+    slug: "hola-bizaphy",
+    title: "Hola bizaphy",
     content: "Este es el primer post de prueba.",
   },
   {
-    slug: "react-basico",
-    title: "React Básico",
-    content: "Introducción a React paso a paso.",
+    slug: "parte-2",
+    title: "Segundo blog. Se empieza implementacion de nuevos proyectos",
+    content:
+      "Prox. a incorporar un backend y base de datos SQL para proyecto de japo",
   },
 ];
