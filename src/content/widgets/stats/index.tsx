@@ -1,5 +1,5 @@
-import { posts } from "@/lib/posts";
-import { projects } from "@/lib/projects";
+import { posts } from "@/data/posts";
+import { projects } from "@/data/projects";
 
 type StatItem = {
   label: string;

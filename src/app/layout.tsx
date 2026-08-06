@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Oxanium } from "next/font/google";
 import "./globals.css";
-import Nav from "./components/Nav";
-import Footer from "./components/Footer";
-import DigitalRain from "./components/effects/DigitalRain";
+import Nav from "@/components/layout-components/Nav";
+import Footer from "@/components/layout-components/Footer";
+import DigitalRain from "@/components/effects/DigitalRain";
 
 const oxanium = Oxanium({
   subsets: ["latin"],

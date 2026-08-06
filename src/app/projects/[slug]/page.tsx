@@ -1,5 +1,5 @@
 // app/projects/[slug]/page.tsx
-import { projects } from "@/lib/projects";
+import { projects } from "@/data/projects";
 import { projectsMap, ProjectSlug } from "@/content/projects";
 
 type PageProps = {

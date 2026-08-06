@@ -1,4 +1,4 @@
-import { posts } from "@/lib/posts";
+import { posts } from "@/data/posts";
 
 // tipo de props que recibe la pagina desde el router
 type PageProps = {

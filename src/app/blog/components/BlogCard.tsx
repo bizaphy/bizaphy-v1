@@ -1,7 +1,7 @@
 // Presentation Component o Dumb Component
 
 import Link from "next/link";
-import TextScramble from "@/app/components/effects/TextScramble";
+import TextScramble from "@/components/effects/TextScramble";
 
 type BlogCardProps = {
   slug: string;

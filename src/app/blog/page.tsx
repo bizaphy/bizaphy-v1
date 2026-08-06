@@ -1,6 +1,6 @@
 //page.tsx es la pagina renderizable, dentro de la carpeta, que en next corresponde al segmento URL
 import BlogList from "./components/BlogList";
-import TextScramble from "@/app/components/effects/TextScramble";
+import TextScramble from "@/components/effects/TextScramble";
 
 
 export default function BlogPage() {
