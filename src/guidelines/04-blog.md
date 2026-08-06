@@ -33,9 +33,8 @@ src/
 │       │   └── page.tsx          ← sin template.tsx propio
 │       ├── layout.tsx
 │       └── page.tsx
-├── lib/
-│   ├── labs.ts                   ← sin cambios
-│   ├── projects/                 ← sin cambios
+├── data/
+│   ├── projects.ts               ← sin cambios (de Fase 3)
 │   └── posts.ts                  ← nuevo
 └── ... (sin cambios)
 ```
@@ -56,7 +55,7 @@ En Blog, cada post es sólo un `title` y un `content` — dos strings. Todos los
 
 ## Metadata
 
-`src/lib/posts.ts`:
+`src/data/posts.ts`:
 
 ```ts
 export type Post = {
@@ -81,7 +80,7 @@ Idénticos a `ProjectCard` y `ProjectList` sustituyendo los nombres. `BlogCard`:
 
 ```tsx
 import Link from "next/link";
-import TextScramble from "@/app/components/effects/TextScramble";
+import TextScramble from "@/components/effects/TextScramble";
 
 type BlogCardProps = {
   slug: string;
@@ -103,7 +102,7 @@ export default function BlogCard({ slug, title }: BlogCardProps) {
 `BlogList`:
 
 ```tsx
-import { posts } from "@/lib/posts";
+import { posts } from "@/data/posts";
 import BlogCard from "./BlogCard";
 
 export default function BlogList() {
@@ -124,7 +123,7 @@ export default function BlogList() {
 `src/app/blog/[slug]/page.tsx`:
 
 ```tsx
-import { posts } from "@/lib/posts";
+import { posts } from "@/data/posts";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -183,7 +182,7 @@ Si todos los pasos funcionan, la fase está terminada.
 
 ## Checklist para replicar esta fase
 
-- [ ] `src/lib/posts.ts` con el tipo `Post` y el array `posts`.
+- [ ] `src/data/posts.ts` con el tipo `Post` y el array `posts`.
 - [ ] `src/app/blog/layout.tsx`, `page.tsx`, `[slug]/page.tsx`.
 - [ ] `src/app/blog/components/BlogCard.tsx` (Presentational) y `BlogList.tsx` (Container).
 - [ ] **No existe** `src/app/blog/[slug]/template.tsx` (opcional, se hereda del template raíz).

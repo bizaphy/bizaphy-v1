@@ -1,7 +1,7 @@
 import Image from "next/image";
-import TextScramble from "@/app/components/effects/TextScramble";
+import TextScramble from "@/components/effects/TextScramble";
 
-import WidgetList from "@/app/components/widgets/WidgetList";
+import WidgetList from "@/components/widgets/WidgetList";
 
 /** Página principal del dashboard con hero y grid de widgets. */
 export default function Home() {
@@ -11,7 +11,7 @@ export default function Home() {
         {/* Hero: título + gif */}
         <header className="flex flex-col items-center gap-3 text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white">
-            <TextScramble text="/neonlab" />
+            <TextScramble text="/bizaphy" />
           </h1>
           <div className="relative w-full aspect-video max-w-xl rounded-lg">
             <Image

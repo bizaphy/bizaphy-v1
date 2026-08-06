@@ -2,7 +2,7 @@
 // No es page, conoce estructura de datos y conecta datos con UI
 
 import BlogCard from "./BlogCard";
-import { posts } from "@/lib/posts";
+import { posts } from "@/data/posts";
 
 export default function BlogList() {
   return (

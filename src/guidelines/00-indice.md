@@ -38,29 +38,29 @@ Al terminar todas las fases, `src/` queda así:
 
 ```
 src/
-├── app/                          ← Routing + UI (Next.js App Router)
+├── app/                          ← Routing (Next.js App Router)
 │   ├── api/market/route.ts       ← Route Handler (proxy Yahoo Finance)
 │   ├── blog/
 │   │   ├── [slug]/page.tsx
-│   │   ├── components/
+│   │   ├── components/           ← componentes propios de la sección
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── projects/
 │   │   ├── [slug]/page.tsx + template.tsx
-│   │   ├── components/
+│   │   ├── components/           ← componentes propios de la sección
 │   │   ├── layout.tsx
 │   │   └── page.tsx
-│   ├── components/
-│   │   ├── effects/              ← TextScramble, DigitalRain
-│   │   ├── widgets/              ← WidgetList, WidgetCard
-│   │   ├── Nav.tsx
-│   │   └── Footer.tsx
 │   ├── layout.tsx
 │   ├── template.tsx
 │   ├── page.tsx
 │   └── globals.css
 │
-├── lib/                          ← Datos puros (sin React)
+├── components/                   ← UI compartida (fuera de app/)
+│   ├── layout-components/        ← Nav.tsx, Footer.tsx
+│   ├── effects/                  ← TextScramble, DigitalRain, ...
+│   └── widgets/                  ← WidgetList, WidgetCard
+│
+├── data/                         ← Datos puros (sin React)
 │   ├── posts.ts
 │   ├── projects.ts
 │   └── widgets.ts
@@ -72,7 +72,9 @@ src/
 └── guidelines/                   ← Esta carpeta con los tutoriales
 ```
 
-**Tres capas, unidireccionales:** `app/` puede importar de `lib/` y de `content/`. `content/` puede importar de `lib/`. `lib/` no importa de nadie. Este orden garantiza que los datos son sustituibles (podrían venir de una API), que las implementaciones son autocontenidas y que la UI solo compone.
+**Cuatro capas, unidireccionales:** `app/` puede importar de `components/`, `data/` y `content/`. `content/` puede importar de `data/` y de `components/`. `components/` puede importar de `data/`. `data/` no importa de nadie. Este orden garantiza que los datos son sustituibles (podrían venir de una API), que las implementaciones son autocontenidas y que la UI solo compone.
+
+**Dos ubicaciones para componentes.** `src/components/` (fuera de `app/`) es para UI compartida entre secciones (Nav, Footer, efectos, widgets). `src/app/<seccion>/components/` es para componentes que **sólo** usa esa sección (`ProjectCard`, `BlogCard`, etc.); vivir dentro de la ruta deja claro que no se reutilizan en otro lado.
 
 ---
 
@@ -113,7 +115,7 @@ Se añade la capa de **movimiento**: `template.tsx` con la transición neon `pag
 
 ### [Fase 3 — El patrón Registry: sección Projects](./03-registry-projects.md)
 
-Se introduce el **patrón Registry** —el concepto arquitectónico más importante del proyecto— construyendo la sección **Projects** de punta a punta. El patrón separa **metadata** (arrays de datos puros en `lib/`) de **implementaciones** (componentes React en `content/`), unidos por un `component map`. Se conocen Server Components y Client Components mostrando ejemplos de ambos, se introduce la máquina de estados `loading | error | data` para proyectos con API real, y se crea un **Route Handler** (`/api/market`) como proxy server-side para APIs con CORS restrictivo.
+Se introduce el **patrón Registry** —el concepto arquitectónico más importante del proyecto— construyendo la sección **Projects** de punta a punta. El patrón separa **metadata** (arrays de datos puros en `data/`) de **implementaciones** (componentes React en `content/`), unidos por un `component map`. Se conocen Server Components y Client Components mostrando ejemplos de ambos, se introduce la máquina de estados `loading | error | data` para proyectos con API real, y se crea un **Route Handler** (`/api/market`) como proxy server-side para APIs con CORS restrictivo.
 
 **Se aprende:**
 - El patrón **metadata + component map**: por qué separar datos de componentes.
@@ -162,7 +164,7 @@ Se construye la sección **Blog** como variante del patrón Registry. La diferen
 Estas reglas aplican en todas las fases, no en una en particular:
 
 - **Nombres explícitos**. `WidgetComponent` es mejor que `Component`. `quote` es mejor que `q`. `urlSlug` es mejor que `s`.
-- **Datos separados de UI**. Los archivos en `lib/` no importan React. Los archivos en `content/` no importan de `app/`. La regla es unidireccional: `app/` → `content/` → `lib/`.
+- **Datos separados de UI**. Los archivos en `data/` no importan React. Los archivos en `content/` no importan de `app/`. La regla es unidireccional: `app/` → `content/` → `data/`.
 - **Server Components por defecto, Client Components sólo cuando hacen falta**. La directiva `"use client"` sube el coste de JS enviado al navegador. Se usa sólo si hay `useState`, `useEffect`, `onClick` o cualquier API del navegador.
 - **Un componente, una responsabilidad**. `ProjectList` obtiene datos, `ProjectCard` los muestra. Si uno empieza a hacer las dos cosas, se divide.
 - **Sin abstracciones prematuras**. Dos secciones (`Projects`, `Blog`) casi idénticas son preferibles a un `<GenericSection>` que las intente unificar.
@@ -181,7 +183,7 @@ Tres pasos, siempre los mismos:
 1. **Crear el componente** en `src/content/projects/mi-proyecto/`:
    - `MiProyecto.tsx` con la implementación
    - `index.ts` con `export { default } from "./MiProyecto"`
-2. **Añadir metadata** en `src/lib/projects.ts`:
+2. **Añadir metadata** en `src/data/projects.ts`:
    ```ts
    { slug: "mi-proyecto", title: "Mi Proyecto", description: "Lo que hace" }
    ```
@@ -198,11 +200,11 @@ La card aparece automáticamente en `/projects` y `/projects/mi-proyecto` render
 
 ### Añadir un Widget
 
-Mismos 3 pasos usando `src/content/widgets/`, `src/lib/widgets.ts` (con `colSpan` / `rowSpan` opcionales), y `widgetsMap`.
+Mismos 3 pasos usando `src/content/widgets/`, `src/data/widgets.ts` (con `colSpan` / `rowSpan` opcionales), y `widgetsMap`.
 
 ### Añadir un Post al Blog
 
-Sólo **1 paso**: añadir una entrada a `src/lib/posts.ts` con `slug`, `title`, `content`. No hay component map ni carpeta de implementaciones — el post es datos puros.
+Sólo **1 paso**: añadir una entrada a `src/data/posts.ts` con `slug`, `title`, `content`. No hay component map ni carpeta de implementaciones — el post es datos puros.
 
 ### Añadir un Widget que enlaza a un Project
 

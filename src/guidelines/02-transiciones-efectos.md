@@ -24,25 +24,26 @@ Lo que **no** vamos a tener todavía:
 
 ## Estructura de carpetas al final de la fase
 
-Aparecen archivos nuevos dentro de `app/components/effects/` y un `template.tsx` raíz:
+Aparecen archivos nuevos dentro de `src/components/effects/` y un `template.tsx` raíz:
 
 ```
 src/
 ├── app/
-│   ├── components/
-│   │   ├── Nav.tsx              ← sin cambios respecto a Fase 1
-│   │   ├── Footer.tsx           ← sin cambios
-│   │   └── effects/
-│   │       ├── TextScramble.tsx ← nuevo (Client Component)
-│   │       └── DigitalRain.tsx  ← nuevo (Client Component, canvas)
 │   ├── layout.tsx               ← ahora renderiza DigitalRain como fondo
 │   ├── template.tsx             ← nuevo (page-scan global)
 │   ├── page.tsx                 ← ahora usa TextScramble
 │   └── globals.css              ← se añaden .page-scan y .page-glitch
+├── components/
+│   ├── layout-components/       ← sin cambios respecto a Fase 1
+│   │   ├── Nav.tsx
+│   │   └── Footer.tsx
+│   └── effects/                 ← nuevo
+│       ├── TextScramble.tsx     ← nuevo (Client Component)
+│       └── DigitalRain.tsx      ← nuevo (Client Component, canvas)
 └── ... (resto sigue vacío)
 ```
 
-Las carpetas `projects/`, `blog/`, `lib/`, `content/projects/`, `content/widgets/` siguen sin contenido.
+Las carpetas `app/projects/`, `app/blog/`, `data/`, `content/projects/`, `content/widgets/` siguen sin contenido.
 
 ---
 
@@ -50,11 +51,11 @@ Las carpetas `projects/`, `blog/`, `lib/`, `content/projects/`, `content/widgets
 
 Ambos envuelven las páginas hijas. La diferencia crítica está en el ciclo de vida:
 
-| Propiedad | `layout.tsx` | `template.tsx` |
-|---|---|---|
-| Se re-monta al navegar | **No** (persiste) | **Sí** (se destruye y recrea) |
-| Mantiene estado | Sí | No |
-| Ideal para | Nav, Footer, providers de contexto | Animaciones de entrada |
+| Propiedad              | `layout.tsx`                       | `template.tsx`                |
+| ---------------------- | ---------------------------------- | ----------------------------- |
+| Se re-monta al navegar | **No** (persiste)                  | **Sí** (se destruye y recrea) |
+| Mantiene estado        | Sí                                 | No                            |
+| Ideal para             | Nav, Footer, providers de contexto | Animaciones de entrada        |
 
 **Por qué `template.tsx` se re-monta.** Cuando un componente se monta, sus animaciones CSS se ejecutan. Si el componente persiste (como un layout), la animación sólo corre una vez, la primera. Al usar template, cada navegación destruye el `div` viejo y crea uno nuevo, re-ejecutando la animación.
 
@@ -76,25 +77,47 @@ Se añaden dos bloques nuevos al `globals.css` de la Fase 1.
 .page-scan::before {
   content: "";
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #d946ef, #e879f9, #d946ef, transparent);
-  box-shadow: 0 0 15px rgba(217, 70, 239, 0.8), 0 0 30px rgba(217, 70, 239, 0.4);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #d946ef,
+    #e879f9,
+    #d946ef,
+    transparent
+  );
+  box-shadow:
+    0 0 15px rgba(217, 70, 239, 0.8),
+    0 0 30px rgba(217, 70, 239, 0.4);
   animation: scan-line-move 0.5s ease-out both;
   z-index: 50;
   pointer-events: none;
 }
 
 @keyframes scan-reveal {
-  0%   { clip-path: inset(0 0 100% 0); }  /* todo oculto */
-  100% { clip-path: inset(0); }           /* todo visible */
+  0% {
+    clip-path: inset(0 0 100% 0);
+  } /* todo oculto */
+  100% {
+    clip-path: inset(0);
+  } /* todo visible */
 }
 
 @keyframes scan-line-move {
-  0%   { top: 0; opacity: 1; }
-  85%  { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+  0% {
+    top: 0;
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
 }
 ```
 
@@ -113,11 +136,31 @@ Ambas duran 0.5s. La línea desaparece al llegar al fondo.
 }
 
 @keyframes glitch-in {
-  0%   { opacity: 0;   transform: translate(4px, -2px);  filter: hue-rotate(90deg); }
-  25%  { opacity: 0.7; transform: translate(-3px, 2px);  filter: hue-rotate(-60deg); }
-  50%  { opacity: 0.5; transform: translate(2px, -1px);  filter: hue-rotate(30deg); }
-  75%  { opacity: 0.9; transform: translate(-1px, 0);    filter: none; }
-  100% { opacity: 1;   transform: translate(0);          filter: none; }
+  0% {
+    opacity: 0;
+    transform: translate(4px, -2px);
+    filter: hue-rotate(90deg);
+  }
+  25% {
+    opacity: 0.7;
+    transform: translate(-3px, 2px);
+    filter: hue-rotate(-60deg);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translate(2px, -1px);
+    filter: hue-rotate(30deg);
+  }
+  75% {
+    opacity: 0.9;
+    transform: translate(-1px, 0);
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0);
+    filter: none;
+  }
 }
 ```
 
@@ -169,7 +212,10 @@ type TextScrambleProps = {
 
 const SCRAMBLE_CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`0123456789";
 
-export default function TextScramble({ text, className = "" }: TextScrambleProps) {
+export default function TextScramble({
+  text,
+  className = "",
+}: TextScrambleProps) {
   const [displayed, setDisplayed] = useState("");
 
   useEffect(() => {
@@ -186,7 +232,9 @@ export default function TextScramble({ text, className = "" }: TextScrambleProps
         .map((char, i) => {
           if (i < revealedCount) return char;
           if (char === " ") return " ";
-          return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+          return SCRAMBLE_CHARS[
+            Math.floor(Math.random() * SCRAMBLE_CHARS.length)
+          ];
         })
         .join("");
 
@@ -201,7 +249,11 @@ export default function TextScramble({ text, className = "" }: TextScrambleProps
     return () => cancelAnimationFrame(animationId);
   }, [text]);
 
-  return <span className={className} aria-label={text}>{displayed}</span>;
+  return (
+    <span className={className} aria-label={text}>
+      {displayed}
+    </span>
+  );
 }
 ```
 
@@ -245,7 +297,11 @@ return () => cancelAnimationFrame(animationId);
 ## Análisis: `aria-label={text}` para accesibilidad
 
 ```tsx
-return <span className={className} aria-label={text}>{displayed}</span>;
+return (
+  <span className={className} aria-label={text}>
+    {displayed}
+  </span>
+);
 ```
 
 Los lectores de pantalla reciben `text` (el original), no `displayed` (el scrambleado). Sin este atributo, un lector diría "signo exclamación arroba almohadilla" mientras la animación transcurre.
@@ -265,7 +321,7 @@ Un canvas a pantalla completa que muestra líneas horizontales de datos hex desp
 
 import { useEffect, useRef } from "react";
 
-export default function DigitalRain({ opacity = 0.10 }: { opacity?: number }) {
+export default function DigitalRain({ opacity = 0.1 }: { opacity?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -368,18 +424,24 @@ Dos cosas que hay que limpiar:
 import type { Metadata } from "next";
 import { Oxanium } from "next/font/google";
 import "./globals.css";
-import Nav from "./components/Nav";
-import Footer from "./components/Footer";
-import DigitalRain from "./components/effects/DigitalRain";
+import Nav from "@/components/layout-components/Nav";
+import Footer from "@/components/layout-components/Footer";
+import DigitalRain from "@/components/effects/DigitalRain";
 
-const oxanium = Oxanium({ /* ... */ });
+const oxanium = Oxanium({
+  /* ... */
+});
 
 export const metadata: Metadata = { title: "neonlab", description: "..." };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${oxanium.className} antialiased min-h-screen flex flex-col relative`}>
+      <body
+        className={`${oxanium.className} antialiased min-h-screen flex flex-col relative`}
+      >
         <DigitalRain />
         <Nav />
         <main className="flex-1 relative z-10">{children}</main>
@@ -399,7 +461,7 @@ Cambios respecto a la Fase 1:
 Y `src/app/page.tsx` con el hero:
 
 ```tsx
-import TextScramble from "@/app/components/effects/TextScramble";
+import TextScramble from "@/components/effects/TextScramble";
 
 export default function Home() {
   return (
@@ -445,9 +507,9 @@ Si todos los pasos funcionan, la fase está terminada.
 - [ ] `globals.css` incluye los bloques `.page-scan` con `::before`, `@keyframes scan-reveal` y `scan-line-move`.
 - [ ] `globals.css` incluye `.page-glitch` con `@keyframes glitch-in`.
 - [ ] `src/app/template.tsx` existe, marca `"use client"` y aplica `page-scan` al wrapper.
-- [ ] `src/app/components/effects/TextScramble.tsx` es Client Component, usa `useEffect` con cleanup vía `cancelAnimationFrame`.
+- [ ] `src/components/effects/TextScramble.tsx` es Client Component, usa `useEffect` con cleanup vía `cancelAnimationFrame`.
 - [ ] `TextScramble` expone el texto original con `aria-label={text}`.
-- [ ] `src/app/components/effects/DigitalRain.tsx` renderiza un `<canvas>` con `fixed inset-0 z-0 pointer-events-none`.
+- [ ] `src/components/effects/DigitalRain.tsx` renderiza un `<canvas>` con `fixed inset-0 z-0 pointer-events-none`.
 - [ ] `DigitalRain` limpia el listener de `resize` y el animation frame en el cleanup.
 - [ ] `layout.tsx` renderiza `<DigitalRain />` dentro del body y da `relative z-10` al `<main>`.
 - [ ] `page.tsx` usa `<TextScramble text="/neonlab" />` en el hero.
@@ -458,10 +520,10 @@ Si todos los pasos funcionan, la fase está terminada.
 
 ## Limitaciones y qué viene después
 
-| No funciona | Motivo |
-|---|---|
-| Rutas `/projects` y `/blog` | Las carpetas siguen vacías desde la Fase 1. |
-| Widgets en el home | El `WidgetList` no existe todavía. Se construye en Fase 5. |
+| No funciona                      | Motivo                                                                                                                       |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Rutas `/projects` y `/blog`      | Las carpetas siguen vacías desde la Fase 1.                                                                                  |
+| Widgets en el home               | El `WidgetList` no existe todavía. Se construye en Fase 5.                                                                   |
 | Transición `page-glitch` visible | La clase existe en CSS, pero ningún `template.tsx` la aplica todavía. La usará `/projects/[slug]/template.tsx` en la Fase 3. |
 
 - **[Fase 3 — El patrón Registry: sección Projects](./03-registry-projects.md)** — construye `/projects` completo, introduce el patrón Registry y añade el `template.tsx` con `page-glitch` para las páginas dinámicas.

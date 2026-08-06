@@ -1,7 +1,7 @@
 // app/projects/page.tsx
 import ProjectList from "./components/ProjectList";
 
-import TextScramble from "@/app/components/effects/TextScramble";
+import TextScramble from "@/components/effects/TextScramble";
 
 export default function ProjectsPage() {
   return (

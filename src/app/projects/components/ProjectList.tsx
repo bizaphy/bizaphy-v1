@@ -1,7 +1,7 @@
 // Container component
-// Conecta datos de projects (lib/projects) con la UI
+// Conecta datos de projects (data/projects) con la UI
 
-import { projects } from "@/lib/projects";
+import { projects } from "@/data/projects";
 import ProjectCard from "./ProjectCard";
 
 export default function ProjectList() {

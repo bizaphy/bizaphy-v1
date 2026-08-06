@@ -1,4 +1,4 @@
-import { widgets } from "@/lib/widgets";
+import { widgets } from "@/data/widgets";
 import { widgetsMap, type WidgetSlug } from "@/content/widgets";
 import WidgetCard from "./WidgetCard";
 

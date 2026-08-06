@@ -27,15 +27,6 @@ Lo que **no** vamos a tener (proyecto terminado):
 ```
 src/
 ├── app/
-│   ├── components/
-│   │   ├── Nav.tsx
-│   │   ├── Footer.tsx
-│   │   ├── widgets/              ← nuevo
-│   │   │   ├── WidgetList.tsx    ← Container
-│   │   │   └── WidgetCard.tsx    ← Presentational con spans
-│   │   └── effects/
-│   │       ├── TextScramble.tsx
-│   │       └── DigitalRain.tsx
 │   ├── api/market/route.ts
 │   ├── projects/...
 │   ├── blog/...
@@ -43,11 +34,21 @@ src/
 │   ├── template.tsx
 │   ├── page.tsx                  ← ahora renderiza <WidgetList />
 │   └── globals.css
-├── lib/
+├── components/                   ← UI compartida (fuera de app/)
+│   ├── layout-components/
+│   │   ├── Nav.tsx
+│   │   └── Footer.tsx
+│   ├── effects/
+│   │   ├── TextScramble.tsx
+│   │   └── DigitalRain.tsx
+│   └── widgets/                  ← nuevo
+│       ├── WidgetList.tsx        ← Container
+│       └── WidgetCard.tsx        ← Presentational con spans
+├── data/                         ← datos puros (sin React)
 │   ├── posts.ts
 │   ├── projects.ts
 │   └── widgets.ts                ← nuevo (metadata con colSpan/rowSpan)
-└── content/
+└── content/                      ← implementaciones (con React)
     ├── projects/...
     └── widgets/                  ← nuevo
         ├── stats/index.tsx
@@ -60,7 +61,7 @@ src/
 
 ## Metadata con propiedades de layout
 
-`src/lib/widgets.ts`:
+`src/data/widgets.ts`:
 
 ```ts
 export type Widget = {
@@ -114,11 +115,18 @@ Mismo patrón que `projectsMap` de la fase anterior.
 `src/content/widgets/stats/index.tsx`:
 
 ```tsx
+import { posts } from "@/data/posts";
+import { projects } from "@/data/projects";
+
+type StatItem = {
+  label: string;
+  value: string;
+};
+
 export default function StatsWidget() {
-  const stats = [
-    { label: "Labs completados", value: "5/8" },
-    { label: "Proyectos", value: "3" },
-    { label: "Posts", value: "7" },
+  const stats: StatItem[] = [
+    { label: "Proyectos", value: String(projects.length) },
+    { label: "Posts", value: String(posts.length) },
   ];
 
   return (
@@ -126,7 +134,7 @@ export default function StatsWidget() {
       {stats.map((stat) => (
         <div key={stat.label} className="flex items-center justify-between">
           <span className="text-sm text-zinc-400">{stat.label}</span>
-          <span className="text-sm font-bold text-white">{stat.value}</span>
+          <span className="text-sm font-bold text-fuchsia-400">{stat.value}</span>
         </div>
       ))}
     </div>
@@ -134,7 +142,7 @@ export default function StatsWidget() {
 }
 ```
 
-Sin `"use client"`, sin hooks. Se renderiza en servidor, no envía JS al navegador.
+Sin `"use client"`, sin hooks. Se renderiza en servidor, no envía JS al navegador. **Los conteos vienen de la metadata**: cuando se añade un nuevo post o proyecto, el número del widget se actualiza solo.
 
 ---
 
@@ -247,7 +255,7 @@ Al envolver el contenido del widget en un `<Link>`, toda la card se convierte en
 
 ## `WidgetCard` — Presentational con spans dinámicos
 
-`src/app/components/widgets/WidgetCard.tsx`:
+`src/components/widgets/WidgetCard.tsx`:
 
 ```tsx
 type WidgetCardProps = {
@@ -324,10 +332,10 @@ En móvil (menor a 640px), el grid es de una sola columna: `grid-cols-1`. En esa
 
 ## `WidgetList` — Container
 
-`src/app/components/widgets/WidgetList.tsx`:
+`src/components/widgets/WidgetList.tsx`:
 
 ```tsx
-import { widgets } from "@/lib/widgets";
+import { widgets } from "@/data/widgets";
 import { widgetsMap, type WidgetSlug } from "@/content/widgets";
 import WidgetCard from "./WidgetCard";
 
@@ -404,8 +412,8 @@ Es exactamente el mismo esquema de Projects, con un detalle extra: el `WidgetCar
 
 ```tsx
 import Image from "next/image";
-import TextScramble from "@/app/components/effects/TextScramble";
-import WidgetList from "@/app/components/widgets/WidgetList";
+import TextScramble from "@/components/effects/TextScramble";
+import WidgetList from "@/components/widgets/WidgetList";
 
 export default function Home() {
   return (
@@ -465,11 +473,11 @@ Si todos los pasos funcionan, el proyecto está terminado.
 
 ## Checklist para replicar esta fase
 
-- [ ] `src/lib/widgets.ts` con el tipo `Widget` (incluye `colSpan?: 1 | 2` y `rowSpan?: 1 | 2`) y el array `widgets`.
+- [ ] `src/data/widgets.ts` con el tipo `Widget` (incluye `colSpan?: 1 | 2` y `rowSpan?: 1 | 2`) y el array `widgets`.
 - [ ] `src/content/widgets/` con una carpeta por widget (`index.tsx`).
 - [ ] `src/content/widgets/index.ts` exporta `widgetsMap` y `WidgetSlug = keyof typeof widgetsMap`.
-- [ ] `src/app/components/widgets/WidgetCard.tsx` calcula spans con `[...].filter(Boolean).join(" ")` y usa prefijo `sm:`.
-- [ ] `src/app/components/widgets/WidgetList.tsx` mapea `widgets` a cards usando `widget.colSpan ?? 1` y `widget.rowSpan ?? 1`.
+- [ ] `src/components/widgets/WidgetCard.tsx` calcula spans con `[...].filter(Boolean).join(" ")` y usa prefijo `sm:`.
+- [ ] `src/components/widgets/WidgetList.tsx` mapea `widgets` a cards usando `widget.colSpan ?? 1` y `widget.rowSpan ?? 1`.
 - [ ] Al menos un widget estático (Server Component) y uno con API real (Client Component).
 - [ ] Los widgets que enlazan a proyectos envuelven su contenido en un `<Link href="/projects/{slug}">`.
 - [ ] `src/app/page.tsx` renderiza `<WidgetList />` bajo el hero.

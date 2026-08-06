@@ -36,14 +36,14 @@ npx create-next-app@latest neonlab
 
 El CLI hace varias preguntas. Éstas son las respuestas y **por qué**:
 
-| Pregunta | Respuesta | Por qué |
-|---|---|---|
-| TypeScript | **Yes** | Todo el proyecto usa tipado estricto. Sin TypeScript, el tipo `MiniLabSlug` (inferido con `keyof typeof`) no funcionaría y se perdería la seguridad en tiempo de edición. |
-| ESLint | **Yes** | Avisa de imports sin usar y variables no declaradas. |
-| Tailwind CSS | **Yes** | Sistema de estilos utility-first. Tailwind 4 se configura vía PostCSS automáticamente. |
-| `src/` directory | **Yes** | Separa el código fuente de los archivos de configuración (`package.json`, `tsconfig.json`, etc.). |
-| App Router | **Yes** | El sistema de routing moderno de Next.js. Soporta Server Components nativamente. |
-| Import alias | `@/*` | Permite escribir `@/lib/labs` en lugar de `../../../lib/labs`. Sin este alias, un componente en `src/app/lab/[slug]/page.tsx` tendría que escribir cuatro `../` para llegar a `lib/`. |
+| Pregunta         | Respuesta | Por qué                                                                                                                                                                               |
+| ---------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript       | **Yes**   | Todo el proyecto usa tipado estricto. Sin TypeScript, el tipo `MiniLabSlug` (inferido con `keyof typeof`) no funcionaría y se perdería la seguridad en tiempo de edición.             |
+| ESLint           | **Yes**   | Avisa de imports sin usar y variables no declaradas.                                                                                                                                  |
+| Tailwind CSS     | **Yes**   | Sistema de estilos utility-first. Tailwind 4 se configura vía PostCSS automáticamente.                                                                                                |
+| `src/` directory | **Yes**   | Separa el código fuente de los archivos de configuración (`package.json`, `tsconfig.json`, etc.).                                                                                     |
+| App Router       | **Yes**   | El sistema de routing moderno de Next.js. Soporta Server Components nativamente.                                                                                                      |
+| Import alias     | `@/*`     | Permite escribir `@/data/posts` en lugar de `../../../data/posts`. Sin este alias, un componente en `src/app/blog/[slug]/page.tsx` tendría que escribir tres `../` para llegar a `data/`. |
 
 Las dependencias finales (sin nada extra):
 
@@ -77,12 +77,7 @@ Aunque muchas carpetas queden vacías, se crean **todas** ahora. La estructura d
 
 ```
 src/
-├── app/                          ← Routing y UI (Next.js App Router)
-│   ├── components/               ← Componentes compartidos (Nav, Footer)
-│   │   ├── Nav.tsx
-│   │   ├── Footer.tsx
-│   │   ├── widgets/              ← vacío (Fase 5)
-│   │   └── effects/              ← vacío (Fase 2)
+├── app/                          ← Routing (Next.js App Router)
 │   ├── api/                      ← vacío (Fase 3)
 │   ├── projects/                 ← vacío (Fase 3)
 │   ├── blog/                     ← vacío (Fase 4)
@@ -90,7 +85,14 @@ src/
 │   ├── page.tsx                  ← Home mínimo
 │   └── globals.css               ← Estilos globales + sistema neon
 │
-├── lib/                          ← Datos puros (vacío en Fase 1)
+├── components/                   ← UI compartida (fuera de app/)
+│   ├── layout-components/        ← Nav y Footer
+│   │   ├── Nav.tsx
+│   │   └── Footer.tsx
+│   ├── effects/                  ← vacío (Fase 2)
+│   └── widgets/                  ← vacío (Fase 5)
+│
+├── data/                         ← Metadata y types (vacío en Fase 1)
 └── content/                      ← Implementaciones React
     ├── projects/                 ← vacío (Fase 3)
     └── widgets/                  ← vacío (Fase 5)
@@ -98,20 +100,21 @@ src/
 
 La lógica de la separación:
 
-| Carpeta | Responsabilidad | Qué contiene | Qué NO contiene |
-|---|---|---|---|
-| `src/app/` | Routing y presentación | Pages, layouts, templates, componentes de UI | Lógica de negocio, datos |
-| `src/lib/` | Datos puros | Types y arrays de metadata | Imports de React, JSX |
-| `src/content/` | Implementaciones React | Componentes reales de cada project/widget | Routing, metadata |
+| Carpeta            | Responsabilidad        | Qué contiene                                    | Qué NO contiene          |
+| ------------------ | ---------------------- | ----------------------------------------------- | ------------------------ |
+| `src/app/`         | Routing                | Pages, layouts, templates, route handlers       | UI reutilizable, datos   |
+| `src/components/`  | UI compartida          | Componentes reutilizables (Nav, Footer, etc.)   | Routing, datos           |
+| `src/data/`        | Datos puros            | Types y arrays de metadata                      | Imports de React, JSX    |
+| `src/content/`     | Implementaciones React | Componentes reales de cada project/widget       | Routing, metadata        |
 
-Cada capa puede cambiar sin tocar las otras. Si se cambia la fuente de datos (de un array hardcoded a una API), sólo se toca `lib/`. Si cambia el diseño de las cards, sólo se toca `app/`.
+Cada capa puede cambiar sin tocar las otras. Si se cambia la fuente de datos (de un array hardcoded a una API), sólo se toca `data/`. Si cambia el diseño de las cards, sólo se toca `components/` o `app/`. Los componentes compartidos como `Nav` y `Footer` viven en `components/layout-components/` para dejar claro que no pertenecen a ninguna ruta específica.
 
 **Archivos especiales de Next.js** que aparecen ya en esta fase:
 
-| Archivo | Qué hace | Cuándo se ejecuta |
-|---|---|---|
-| `page.tsx` | Define la UI de una ruta | Cuando el usuario navega a esa URL |
-| `layout.tsx` | Envuelve las páginas hijas. **Persiste** entre navegaciones | Una sola vez, al montar |
+| Archivo      | Qué hace                                                    | Cuándo se ejecuta                  |
+| ------------ | ----------------------------------------------------------- | ---------------------------------- |
+| `page.tsx`   | Define la UI de una ruta                                    | Cuando el usuario navega a esa URL |
+| `layout.tsx` | Envuelve las páginas hijas. **Persiste** entre navegaciones | Una sola vez, al montar            |
 
 ---
 
@@ -143,7 +146,7 @@ Ya lo configura `create-next-app`:
 }
 ```
 
-Cuando TypeScript ve `@/lib/labs`, lo reemplaza por `./src/lib/labs`. Este alias funciona en cualquier archivo sin importar la profundidad.
+Cuando TypeScript ve `@/data/posts`, lo reemplaza por `./src/data/posts`. Este alias funciona en cualquier archivo sin importar la profundidad.
 
 ### Fuente tipográfica: Oxanium
 
@@ -214,14 +217,22 @@ body {
 }
 
 @keyframes neon-border-pulse {
-  0%, 100% { box-shadow: 0 1px 8px rgba(217, 70, 239, 0.15); }
-  50%      { box-shadow: 0 1px 20px rgba(217, 70, 239, 0.45); }
+  0%,
+  100% {
+    box-shadow: 0 1px 8px rgba(217, 70, 239, 0.15);
+  }
+  50% {
+    box-shadow: 0 1px 20px rgba(217, 70, 239, 0.45);
+  }
 }
 
 @keyframes led-blink {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
-    box-shadow: 0 0 6px rgba(217, 70, 239, 0.8), 0 0 12px rgba(217, 70, 239, 0.4);
+    box-shadow:
+      0 0 6px rgba(217, 70, 239, 0.8),
+      0 0 12px rgba(217, 70, 239, 0.4);
   }
   50% {
     opacity: 0.4;
@@ -229,8 +240,12 @@ body {
   }
 }
 
-.neon-nav { animation: neon-border-pulse 3s ease-in-out infinite; }
-.neon-led { animation: led-blink 2s ease-in-out infinite; }
+.neon-nav {
+  animation: neon-border-pulse 3s ease-in-out infinite;
+}
+.neon-led {
+  animation: led-blink 2s ease-in-out infinite;
+}
 ```
 
 Análisis pieza por pieza a continuación.
@@ -311,11 +326,18 @@ Y el hover:
 
 ```css
 @keyframes neon-border-pulse {
-  0%, 100% { box-shadow: 0 1px 8px rgba(217, 70, 239, 0.15); }
-  50%      { box-shadow: 0 1px 20px rgba(217, 70, 239, 0.45); }
+  0%,
+  100% {
+    box-shadow: 0 1px 8px rgba(217, 70, 239, 0.15);
+  }
+  50% {
+    box-shadow: 0 1px 20px rgba(217, 70, 239, 0.45);
+  }
 }
 
-.neon-nav { animation: neon-border-pulse 3s ease-in-out infinite; }
+.neon-nav {
+  animation: neon-border-pulse 3s ease-in-out infinite;
+}
 ```
 
 **Por qué animaciones CSS y no JavaScript.** Rendimiento. Las animaciones CSS corren en el compositor del navegador (un hilo separado del JS principal). Pueden ir a 60fps aunque haya JavaScript pesado ejecutándose. Un `requestAnimationFrame` para lo mismo competiría con el resto del código.
@@ -331,13 +353,13 @@ Y el hover:
 
 Toda la app usa sólo estos colores. La restricción es intencional: una paleta limitada crea cohesión visual.
 
-| Rol | Tailwind | Hex | Dónde se usa |
-|---|---|---|---|
-| Fondo principal | `bg-black`, `bg-zinc-950` | `#000000` | Body, containers |
-| Texto principal | `text-white` | `#ffffff` | Títulos, datos importantes |
-| Texto secundario | `text-zinc-400` | — | Descripciones, labels |
-| Bordes | `border-zinc-800` | — | Separadores sutiles |
-| Acento neon | `fuchsia-400`, `fuchsia-500` | `#e879f9`, `#d946ef` | Bordes, hovers, glows, LED |
+| Rol              | Tailwind                     | Hex                  | Dónde se usa               |
+| ---------------- | ---------------------------- | -------------------- | -------------------------- |
+| Fondo principal  | `bg-black`, `bg-zinc-950`    | `#000000`            | Body, containers           |
+| Texto principal  | `text-white`                 | `#ffffff`            | Títulos, datos importantes |
+| Texto secundario | `text-zinc-400`              | —                    | Descripciones, labels      |
+| Bordes           | `border-zinc-800`            | —                    | Separadores sutiles        |
+| Acento neon      | `fuchsia-400`, `fuchsia-500` | `#e879f9`, `#d946ef` | Bordes, hovers, glows, LED |
 
 ---
 
@@ -351,8 +373,8 @@ Toda la app usa sólo estos colores. La restricción es intencional: una paleta 
 import type { Metadata } from "next";
 import { Oxanium } from "next/font/google";
 import "./globals.css";
-import Nav from "./components/Nav";
-import Footer from "./components/Footer";
+import Nav from "@/components/layout-components/Nav";
+import Footer from "@/components/layout-components/Footer";
 
 const oxanium = Oxanium({
   subsets: ["latin"],
@@ -370,7 +392,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${oxanium.className} antialiased min-h-screen flex flex-col`}>
+      <body
+        className={`${oxanium.className} antialiased min-h-screen flex flex-col`}
+      >
         <Nav />
         <main className="flex-1">{children}</main>
         <Footer />
@@ -422,7 +446,7 @@ Es una convención que `create-next-app` genera por defecto.
 
 ## El componente `Nav`
 
-`src/app/components/Nav.tsx`:
+`src/components/layout-components/Nav.tsx`:
 
 ```tsx
 import Link from "next/link";
@@ -430,7 +454,10 @@ import Link from "next/link";
 export default function Nav() {
   return (
     <nav className="neon-nav flex items-center border-b border-fuchsia-500 px-6 py-4">
-      <Link href="/" className="neon-link flex items-center gap-2 font-bold tracking-widest">
+      <Link
+        href="/"
+        className="neon-link flex items-center gap-2 font-bold tracking-widest"
+      >
         <span className="neon-led inline-block h-2 w-2 rounded-full bg-fuchsia-500" />
         NEONLAB
       </Link>
@@ -461,14 +488,15 @@ Puntos clave:
 
 ## El componente `Footer`
 
-`src/app/components/Footer.tsx`:
+`src/components/layout-components/Footer.tsx`:
 
 ```tsx
 export default function Footer() {
   return (
     <footer className="neon-nav flex items-center justify-between border-t border-fuchsia-500 px-6 py-4 text-sm text-zinc-500">
       <p>
-        <span className="text-fuchsia-500">&gt;</span> {new Date().getFullYear()} NeonLab
+        <span className="text-fuchsia-500">&gt;</span>{" "}
+        {new Date().getFullYear()} NeonLab
       </p>
       <p className="flex items-center gap-2">
         Creado con Next.js
@@ -493,8 +521,8 @@ export default function Home() {
     <div className="mx-auto max-w-3xl px-6 py-16 flex flex-col gap-8">
       <h1 className="text-3xl font-bold">NeonLab</h1>
       <p className="text-zinc-400">
-        Plataforma educativa con estética cyberpunk. Explorá los labs,
-        proyectos y notas del blog.
+        Plataforma educativa con estética cyberpunk. Explorá los labs, proyectos
+        y notas del blog.
       </p>
     </div>
   );
@@ -529,7 +557,7 @@ Si todos los pasos funcionan, la fase está terminada.
 ## Checklist para replicar esta fase
 
 - [ ] Proyecto creado con `npx create-next-app@latest` seleccionando TypeScript, Tailwind, `src/`, App Router y alias `@/*`.
-- [ ] Estructura completa de carpetas creada dentro de `src/` (aunque `lib/`, `content/projects/`, `content/widgets/` queden vacías).
+- [ ] Estructura completa de carpetas creada dentro de `src/` (aunque `data/`, `content/projects/`, `content/widgets/` queden vacías).
 - [ ] `next.config.ts` vacío (sin custom config).
 - [ ] `globals.css` con `@import "tailwindcss"`, variables `--background` / `--foreground`, `color-scheme: dark`.
 - [ ] `@layer components` en `globals.css` con `.neon-card`, `.neon-card:hover`, `.neon-link`, `.neon-link:hover`.
@@ -545,12 +573,12 @@ Si todos los pasos funcionan, la fase está terminada.
 
 ## Limitaciones y qué viene después
 
-| No funciona | Motivo |
-|---|---|
-| Transiciones al navegar | No existe `template.tsx`. Al hacer click en `/`, el contenido cambia sin animación. |
-| Efectos `TextScramble` y `DigitalRain` | No están creados. |
-| Rutas `/blog` y `/projects` | Las carpetas están vacías. Ir a esas rutas da 404 de Next.js. |
-| Home con hero animado y widgets | El home es sólo un párrafo estático. |
+| No funciona                            | Motivo                                                                              |
+| -------------------------------------- | ----------------------------------------------------------------------------------- |
+| Transiciones al navegar                | No existe `template.tsx`. Al hacer click en `/`, el contenido cambia sin animación. |
+| Efectos `TextScramble` y `DigitalRain` | No están creados.                                                                   |
+| Rutas `/blog` y `/projects`            | Las carpetas están vacías. Ir a esas rutas da 404 de Next.js.                       |
+| Home con hero animado y widgets        | El home es sólo un párrafo estático.                                                |
 
 Todo esto se resuelve más adelante:
 
